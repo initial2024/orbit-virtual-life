@@ -1,0 +1,10 @@
+node_modules/
+dist/
+coverage/
+.env*
+*.save
+*.orbit-save
+*.backup
+transfers/
+private-data/
+.DS_Store

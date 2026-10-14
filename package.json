@@ -1,0 +1,14 @@
+{
+  "name": "orbit-virtual-life",
+  "version": "0.17.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "check": "node --check src/shared-sync.mjs && node --check src/company-engine.mjs && node --check src/company-settlement.mjs && node --check src/shared-actions.mjs && node --check src/policy-engine.mjs",
+    "verify": "npm run check && npm test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
