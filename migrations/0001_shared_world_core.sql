@@ -28,3 +28,9 @@ CREATE TABLE market_buckets(region TEXT NOT NULL,sku TEXT NOT NULL,bucket INTEGE
 CREATE TABLE idempotency_keys(account_id TEXT NOT NULL,request_id TEXT NOT NULL,committed_revision INTEGER NOT NULL,created_at INTEGER NOT NULL,PRIMARY KEY(account_id,request_id));
 CREATE TABLE sync_heads(account_id TEXT PRIMARY KEY,revision INTEGER NOT NULL,digest TEXT NOT NULL,checkpoint_revision INTEGER NOT NULL DEFAULT 0,updated_at INTEGER NOT NULL);
 CREATE TABLE checkpoints(account_id TEXT PRIMARY KEY,revision INTEGER NOT NULL,encoded_snapshot TEXT NOT NULL,encoded_bytes INTEGER NOT NULL CHECK(encoded_bytes<=196608),updated_at INTEGER NOT NULL);
+
+-- One compact state row per country/region; old event detail is bounded/compacted.
+CREATE TABLE policy_state(scope_type TEXT NOT NULL,scope_id TEXT NOT NULL,period INTEGER NOT NULL,revision INTEGER NOT NULL,state_json TEXT NOT NULL CHECK(length(state_json)<=4096),updated_at INTEGER NOT NULL,PRIMARY KEY(scope_type,scope_id));
+CREATE TABLE policy_events(event_id TEXT PRIMARY KEY,scope_type TEXT NOT NULL,scope_id TEXT NOT NULL,period INTEGER NOT NULL,event_code TEXT NOT NULL,delta_scaled INTEGER NOT NULL,created_at INTEGER NOT NULL);
+CREATE INDEX policy_events_scope ON policy_events(scope_type,scope_id,period DESC);
+CREATE TABLE settlement_heads(kind TEXT NOT NULL,scope_id TEXT NOT NULL,period INTEGER NOT NULL,revision INTEGER NOT NULL,updated_at INTEGER NOT NULL,PRIMARY KEY(kind,scope_id));
