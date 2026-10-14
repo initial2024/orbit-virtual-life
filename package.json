@@ -1,0 +1,12 @@
+{
+  "name": "orbit-virtual-life",
+  "version": "0.16.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "check": "node --check src/market-sim.mjs && node --check src/policy-sim.mjs && node --check src/account-sync.mjs && node --check src/shared-world.mjs && node --check src/sync-policy.mjs && node --check src/market-ui.js && node --check test/stage16-final-rc.test.mjs"
+  },
+  "engines": {"node": ">=20"},
+  "description": "Offline-first virtual-life simulation release candidate with shared-world protocol, regional policy and low-bandwidth account sync"
+}
