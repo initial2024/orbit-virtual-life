@@ -1,0 +1,12 @@
+{
+  "name": "orbit-virtual-life-stage16",
+  "version": "0.16.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "check": "node --check src/shared-world.mjs && node --check src/account-sync-v1.mjs"
+  },
+  "engines": {"node": ">=20"},
+  "description": "Product-first local simulation with shared-world protocol, player/NPC company systems and low-bandwidth account sync"
+}
