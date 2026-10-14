@@ -38,5 +38,5 @@ export function syncPlan({dirtyActions=0,lastCheckpointAt=0,now=Date.now(),manua
  if(pageHide&&dirtyActions>0)return {mode:"batch",reason:"PAGE_HIDE"};
  return {mode:"batch",reason:"ROW_ACTIONS"};
 }
-export const SERVER_AUTHORITATIVE=Object.freeze(["wallet","ledger","company","company_member","company_job","company_application","store","inventory","order","review","comment","reaction","market","security_position","property","loan","tax_record"]);
+export const SERVER_AUTHORITATIVE=Object.freeze(["wallet","ledger","company","company_member","company_job","company_application","store","inventory","order","review","comment","reaction","market","security_position","property","loan","tax_record","policy_state","policy_event","settlement_head"]);
 export const LOCAL_ONLY=Object.freeze(["ui_settings","drafts","catalog_cache","image_cache","offline_sandbox"]);
