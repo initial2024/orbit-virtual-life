@@ -1,0 +1,9 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import {createMutationEnvelope,validateMutationEnvelope,validateSettlement,ACTIONS} from "../src/shared-world.mjs";
+import {makeAccountManifest,makeAccountDelta,protocolSeparation,ACCOUNT_SYNC_LIMITS} from "../src/account-sync-v1.mjs";
+import {syncClass,chooseSync} from "../src/sync-policy.mjs";
+test("player company recruitment and comments are bounded server mutations",()=>{const e=createMutationEnvelope({accountId:"acct-demo",action:"COMPANY_JOB_POST",expectedVersion:4,clientNonce:"nonce-stage16-001",body:{companyId:"c1",role:"sales",weeklyPay:1200}});assert.ok(validateMutationEnvelope(e));assert.ok(ACTIONS.COMMENT_CREATE);assert.equal(e.transport,"NOT_CONFIGURED");});
+test("money settlement must balance",()=>{assert.equal(validateSettlement([{account:"buyer",amount:-100},{account:"seller",amount:78},{account:"platform",amount:12},{account:"rider",amount:6},{account:"tax",amount:4}]).balanced,true);});
+test("two games share protocol but not D1 wallets",()=>{const m=makeAccountManifest({accountId:"acct-demo",gameId:"virtual-life",revision:3,digest:"abcdef0123456789",encodedBytes:12000,updatedAt:1234});assert.equal(m.gameId,"virtual-life");const d=makeAccountDelta({accountId:"acct-demo",gameId:"orbit-city",baseRevision:3,clientNonce:"nonce-stage16-city",actions:[{type:"advance",months:1}]});assert.ok(d.bytes<ACCOUNT_SYNC_LIMITS.deltaBytes);const sep=protocolSeparation();assert.notEqual(sep.databases["virtual-life"],sep.databases["orbit-city"]);assert.equal(sep.networkEnabled,false);});
+test("social/recruitment sync is row-sized rather than full-save",()=>{assert.equal(syncClass("COMPANY_JOB_POST"),"immediate");assert.equal(syncClass("AD_CAMPAIGN_CREATE"),"batch");assert.equal(chooseSync({dirtyActions:2,dirtyBytes:2048}).mode,"delta");});
