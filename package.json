@@ -5,8 +5,10 @@
   "type": "module",
   "scripts": {
     "test": "node --test",
-    "check": "node --check src/shared-sync.mjs && node --check src/company-engine.mjs && node --check src/company-settlement.mjs",
+    "check": "node --check src/shared-sync.mjs && node --check src/company-engine.mjs && node --check src/company-settlement.mjs && node --check src/shared-actions.mjs",
     "verify": "npm run check && npm test"
   },
-  "engines": {"node": ">=20"}
+  "engines": {
+    "node": ">=20"
+  }
 }
