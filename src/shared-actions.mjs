@@ -1,25 +1,22 @@
 const enc=new TextEncoder();
-const RULES=Object.freeze({
- COMMENT_CREATE:{max:1400,fields:["scopeType","scopeId","body"]},
- REVIEW_CREATE:{max:1800,fields:["targetType","targetId","orderId","rating","body"]},
- REACTION_SET:{max:600,fields:["targetType","targetId","reaction"]},
- COMPANY_CREATE:{max:1200,fields:["companyId","name","region","industry","capital"]},
- COMPANY_UPDATE:{max:1400,fields:["companyId","field","value"]},
- COMPANY_JOB_POST:{max:1200,fields:["companyId","jobId","role","weeklyWage","slots","expiresWeek"]},
- COMPANY_JOB_APPLY:{max:1200,fields:["companyId","jobId","skill","message"]},
- COMPANY_JOB_DECIDE:{max:800,fields:["companyId","jobId","accountId","decision"]},
- COMPANY_NPC_HIRE:{max:800,fields:["companyId","role","grade","count"]},
- COMPANY_NPC_FIRE:{max:800,fields:["companyId","role","grade","count"]},
- MARKET_ORDER:{max:1200,fields:["region","sku","side","quantity","limitPrice","currency"]},
- PLAYER_TRADE:{max:1600,fields:["listingId","assetType","assetId","price","currency"]}
+export const ACTION_RULES=Object.freeze({
+ COMMENT_CREATE:{keys:['scopeType','scopeId','body'],maxBytes:1600},
+ REVIEW_CREATE:{keys:['targetType','targetId','orderId','rating','body'],maxBytes:1800},
+ REACTION_SET:{keys:['targetType','targetId','reaction'],maxBytes:512},
+ COMPANY_CREATE:{keys:['companyId','name','region','industry','capitalMinor'],maxBytes:1400},
+ COMPANY_UPDATE:{keys:['companyId','name','marketingMinor','policy'],maxBytes:1400},
+ COMPANY_JOB_POST:{keys:['companyId','jobId','role','weeklyWageMinor','slots','expiresAt'],maxBytes:1200},
+ COMPANY_JOB_APPLY:{keys:['jobId','skill','message'],maxBytes:1200},
+ COMPANY_JOB_DECIDE:{keys:['companyId','jobId','accountId','decision'],maxBytes:900},
+ COMPANY_NPC_HIRE:{keys:['companyId','role','grade','count'],maxBytes:700},
+ COMPANY_NPC_FIRE:{keys:['companyId','role','grade','count'],maxBytes:700},
+ MARKET_ORDER:{keys:['region','sku','variant','side','quantity','limitPriceMinor'],maxBytes:900},
+ PLAYER_TRADE:{keys:['listingId','quantity'],maxBytes:600}
 });
-const plain=v=>v===null||["string","number","boolean"].includes(typeof v);
-export function narrowPayload(type,payload){
- const rule=RULES[type];if(!rule||!payload||typeof payload!=="object"||Array.isArray(payload))throw Error("ACTION_PAYLOAD_INVALID");
- const keys=Object.keys(payload);if(keys.some(k=>!rule.fields.includes(k)))throw Error("ACTION_FIELD_NOT_ALLOWED");
- const out={};for(const k of rule.fields)if(k in payload){const v=payload[k];if(!plain(v))throw Error("ACTION_VALUE_COMPLEX");out[k]=v;}
- if(enc.encode(JSON.stringify(out)).byteLength>rule.max)throw Error("ACTION_PAYLOAD_TOO_LARGE");
- return out;
+const scalar=v=>v===null||['string','number','boolean'].includes(typeof v);
+export function narrowPayload(type,payload={}){
+ const rule=ACTION_RULES[type];if(!rule||!payload||typeof payload!=='object'||Array.isArray(payload))throw Error('ACTION_TYPE');
+ const keys=Object.keys(payload);if(keys.some(k=>!rule.keys.includes(k)))throw Error('ACTION_EXTRA_FIELD');
+ const out={};for(const k of rule.keys)if(payload[k]!==undefined){if(!scalar(payload[k]))throw Error('ACTION_COMPLEX_FIELD');out[k]=payload[k];}
+ const bytes=enc.encode(JSON.stringify(out)).byteLength;if(bytes>rule.maxBytes)throw Error('ACTION_TOO_LARGE');return out;
 }
-export function allowedActionTypes(){return Object.keys(RULES);}
-export const ACTION_RULES=RULES;
