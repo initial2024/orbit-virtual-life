@@ -45,4 +45,25 @@ with tempfile.TemporaryDirectory() as d:
  else:raise AssertionError('insufficient funds should abort')
  assert db.execute("SELECT COUNT(*) FROM sim_payroll_events WHERE employment_id='job:large'").fetchone()[0]==0
  assert db.execute('SELECT SUM(available_minor) FROM sim_wallets').fetchone()[0]==previous
+ # Distinct player employments must not be merged by an idempotency-key collision.
+ db.execute("UPDATE sim_employments SET status='active' WHERE employment_id='job:one'")
+ db.execute("INSERT INTO sim_employments VALUES('job:second','player:two','company:one',100005,100000,1,'active')")
+ def multi(t):
+  employment,worker=t;issue(employment=employment,worker=worker,period=4,now=4)
+ with concurrent.futures.ThreadPoolExecutor(max_workers=24) as pool:
+  list(pool.map(multi,[('job:one','player:one'),('job:second','player:two')]*48))
+ assert db.execute('SELECT COUNT(*) FROM sim_payroll_events WHERE period_id=4').fetchone()[0]==2
+ assert db.execute('SELECT SUM(available_minor) FROM sim_wallets').fetchone()[0]==total
+ # Two different salaries race for a company with funds for only one payout.
+ db.execute("INSERT INTO sim_wallets(account_id,available_minor) VALUES('company:low',150000)")
+ db.execute("INSERT INTO sim_employments VALUES('job:third','player:one','company:low',100005,100000,1,'active')")
+ db.execute("INSERT INTO sim_employments VALUES('job:fourth','player:two','company:low',100005,100000,1,'active')")
+ def try_pay(t):
+  try:issue(employment=t[0],worker=t[1],period=5,now=5)
+  except sqlite3.IntegrityError as e: assert 'PAYROLL_FUNDS_INSUFFICIENT' in str(e)
+ with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+  list(pool.map(try_pay,[('job:third','player:one'),('job:fourth','player:two')]))
+ assert db.execute('SELECT COUNT(*) FROM sim_payroll_events WHERE period_id=5').fetchone()[0]==1
+ assert db.execute("SELECT available_minor FROM sim_wallets WHERE account_id='company:low'").fetchone()[0]==49995
+ assert db.execute('SELECT SUM(available_minor) FROM sim_wallets').fetchone()[0]==total+150000
  print('PASS: 96 parallel same-period requests => 1 payroll; authorization, cash conservation, insufficient funds and unemployment verified')
