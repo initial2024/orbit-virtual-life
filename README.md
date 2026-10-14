@@ -2,26 +2,28 @@
 
 Open-source virtual life and shared-economy simulation.
 
-## Final-candidate direction
+## Current development status
 
-The current development branch contains the modular core for:
+Stage 16 is being developed on `work/stage16-shared-world-companies`.
 
-- shared-world low-bandwidth account sync;
-- player companies, real-player job applications and aggregated NPC staffing;
-- national + regional fictional policy simulation;
-- slim D1 schema for wallets, ledgers, companies, stores, inventory, orders, reviews/comments and shared market state;
-- bounded checkpoints and row-oriented synchronization.
+Implemented in the current source branch:
 
-The validated offline Stage 17 client additionally contains 961 fictional stores / 56 store types / 232 unified traded items, long-term life/finance/travel systems and the local simulation UI.
+- shared Orbit account-sync v1 contract with `appId=virtual-life`
+- narrow row/action synchronization instead of uploading the full game state for comments, reviews, company recruitment and market commands
+- player-founded company core
+- player job posts, applications, hire/reject, resignation and termination
+- compact NPC staffing by company + role + grade
+- payroll reserve rules and player wage ledger-transfer plans
+- weekly company settlement separating real-player sales from simulated NPC demand
+- bounded shared-world D1 schema candidate and retention policy
+- one bounded checkpoint per account, with small head/manifest checks
 
-### Important boundaries
+Cloudflare resources are intentionally **not created or migrated yet**. The migration in `migrations/` is a design candidate.
 
-This project is a fictional simulation. It is not a bank, brokerage, lender, lottery/gambling service, tax-filing service, immigration service, employment agency, or real payment platform. Virtual currency has no cash value.
+Generated product media and monolithic offline preview files remain build artifacts rather than authoritative source.
 
-National/regional policy values are game calibration and do not represent current law, political positions, or jurisdiction rankings.
+## Safety / scope
 
-### Cloud architecture
+All currency, companies, securities, loans, lotteries, taxes, immigration and other institutions are fictional simulation mechanics unless an official informational source is explicitly linked. No real-money brokerage, gambling, lending, banking or immigration service is provided.
 
-Orbit Virtual Life and Orbit City are designed to share one Cloudflare **account** and one identity subject, while keeping separate game D1 databases/namespaces. Routine shared-world updates synchronize narrow rows/actions; full compressed checkpoints are bounded and periodic/manual rather than transferred after every action.
-
-No Cloudflare resource is created by this branch.
+See `DISCLAIMER.md`, `docs/ARCHITECTURE.md`, `docs/ACCOUNT_SYNC_V1.md`, and `docs/COMPANY_SYSTEM.md`.
