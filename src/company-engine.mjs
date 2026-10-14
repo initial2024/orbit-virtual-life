@@ -39,6 +39,18 @@ export function hirePlayer(company,{actorId,jobId,accountId}={}){
 export function rejectApplication(company,{actorId,jobId,accountId}={}){
  if(!manager(company,actorId))throw Error("REJECT_FORBIDDEN");const app=company.applications.find(x=>x.jobId===jobId&&x.accountId===accountId&&x.status==="pending");if(!app)throw Error("APPLICATION_NOT_FOUND");app.status="rejected";company.revision++;return company;
 }
+export function resignPlayer(company,{accountId}={}){
+ if(!goodId(accountId)||accountId===company.founderId)throw Error("RESIGN_INVALID");
+ const m=member(company,accountId);if(!m)throw Error("MEMBER_NOT_FOUND");m.status="resigned";company.revision++;return company;
+}
+export function terminatePlayer(company,{actorId,accountId}={}){
+ if(!manager(company,actorId)||!goodId(accountId)||accountId===company.founderId)throw Error("TERMINATE_FORBIDDEN");
+ const m=member(company,accountId);if(!m)throw Error("MEMBER_NOT_FOUND");m.status="terminated";company.revision++;return company;
+}
+export function playerPayrollTransfers(company,{currency="SIM"}={}){
+ if(typeof currency!=="string"||currency.length<3||currency.length>8)throw Error("CURRENCY_INVALID");
+ return company.playerMembers.filter(x=>x.status==="active"&&x.weeklyWage>0).map(x=>({from:`company:${company.companyId}`,to:x.accountId,currency,amount:round(x.weeklyWage),kind:"company_wage",refId:company.companyId}));
+}
 export function hireNpc(company,{actorId,role,grade="junior",count=1}={}){
  if(!manager(company,actorId)||company.status!=="active"||typeof role!=="string"||role.length<2||!COMPANY_RULES.npcGrades.includes(grade)||!Number.isInteger(count)||count<1||count>20)throw Error("NPC_HIRE_INVALID");
  const mult={junior:.75,mid:1,senior:1.45}[grade],weeklyWage=round(180*REGION_WAGE_INDEX[company.region]*mult);
