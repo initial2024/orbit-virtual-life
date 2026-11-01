@@ -16,9 +16,14 @@ export function settleCompanyWeek(company,{playerSalesObserved=0,npcDemandIndex=
 }
 export function settlementTransfers(company,statement,{currency='SIM'}={}){
  if(!validateCompany(company)||!statement||typeof currency!=='string'||currency.length<3||currency.length>8)throw Error('SETTLEMENT_INVALID');
- const out=[];const add=(from,to,amount,kind)=>{amount=round(amount);if(amount>0)out.push({from,to,currency,amount,kind,refId:company.companyId});};
+ if(!Number.isSafeInteger(statement.week)||statement.week<1||statement.week>100000)throw Error('SETTLEMENT_PERIOD_INVALID');
+ const periodId=statement.week,out=[];
+ const add=(from,to,amount,kind)=>{amount=round(amount);if(amount>0)out.push({
+  from,to,currency,amount,kind,refId:`company-settlement:${company.companyId}:week:${periodId}:${kind}`,
+  settlementOwner:'company_weekly',payrollCadence:'weekly',periodId
+ });};
  add('system:npc-economy',`company:${company.companyId}`,statement.npcRevenue,'npc_customer_revenue');
- for(const t of playerPayrollTransfers(company,{currency}))add(t.from,t.to,t.amount,'company_wage');
+ out.push(...playerPayrollTransfers(company,{currency,periodId}));
  add(`company:${company.companyId}`,'system:npc-households',statement.npcPayroll,'npc_payroll');
  add(`company:${company.companyId}`,'system:property',statement.rent,'commercial_rent');
  add(`company:${company.companyId}`,'system:utilities',statement.utilities,'utilities');
