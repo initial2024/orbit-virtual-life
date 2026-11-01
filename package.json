@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "test": "node --test",
-    "check": "node --check src/shared-sync.mjs && node --check src/company-engine.mjs && node --check src/company-settlement.mjs && node --check src/shared-actions.mjs && node --check src/policy-engine.mjs",
+    "check": "node --check src/shared-sync.mjs && node --check src/company-engine.mjs && node --check src/company-settlement.mjs && node --check src/shared-actions.mjs && node --check src/policy-engine.mjs && node --check src/household-cashflow.mjs && node --check src/payroll-atomic.mjs",
     "verify": "npm run check && npm test"
   },
   "engines": {
