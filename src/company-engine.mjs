@@ -47,9 +47,14 @@ export function terminatePlayer(company,{actorId,accountId}={}){
  if(!manager(company,actorId)||!goodId(accountId)||accountId===company.founderId)throw Error("TERMINATE_FORBIDDEN");
  const m=member(company,accountId);if(!m)throw Error("MEMBER_NOT_FOUND");m.status="terminated";company.revision++;return company;
 }
-export function playerPayrollTransfers(company,{currency="SIM"}={}){
+export function playerPayrollTransfers(company,{currency="SIM",periodId}={}){
  if(typeof currency!=="string"||currency.length<3||currency.length>8)throw Error("CURRENCY_INVALID");
- return company.playerMembers.filter(x=>x.status==="active"&&x.weeklyWage>0).map(x=>({from:`company:${company.companyId}`,to:x.accountId,currency,amount:round(x.weeklyWage),kind:"company_wage",refId:company.companyId}));
+ if(!Number.isSafeInteger(periodId)||periodId<1||periodId>100000)throw Error("PAYROLL_PERIOD_INVALID");
+ return company.playerMembers.filter(x=>x.status==="active"&&x.weeklyWage>0).map(x=>({
+  from:`company:${company.companyId}`,to:x.accountId,currency,amount:round(x.weeklyWage),kind:"company_wage",
+  refId:`company-payroll:${company.companyId}:${x.accountId}:week:${periodId}`,
+  settlementOwner:"company_weekly",payrollCadence:"weekly",periodId
+ }));
 }
 export function hireNpc(company,{actorId,role,grade="junior",count=1}={}){
  if(!manager(company,actorId)||company.status!=="active"||typeof role!=="string"||role.length<2||!COMPANY_RULES.npcGrades.includes(grade)||!Number.isInteger(count)||count<1||count>20)throw Error("NPC_HIRE_INVALID");
