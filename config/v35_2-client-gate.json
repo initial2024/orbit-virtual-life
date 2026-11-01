@@ -1,0 +1,21 @@
+{
+  "contract_version": 1,
+  "candidate": "Orbit Virtual Life V35.2 First Open Scroll Offline 20261015",
+  "authoritative_import": {
+    "file_name": "Orbit_Virtual_Life_V35_2_portable.html",
+    "expected_sha256": "b53f7146eee9a8f27842a9f65c043777a6216dd9d227690a29a714dde21e08af",
+    "source_zip_sha256": "eb9c1365e42bcccd0f7eaab949160328b6e21bab6c0795ec9cdddf89fd08af18",
+    "raw_bytes_currently_retrieved": false
+  },
+  "known_non_authoritative_library_candidate": {
+    "file_name": "Orbit_Virtual_Life_V35_portable.html",
+    "observed_size_bytes": 1526059,
+    "observed_sha256": "ee3024239a4b582d89325640092511ec061291e972827740cb37d121bd6b0b9c",
+    "accepted_as_substitute": false
+  },
+  "deployment_target": {
+    "cloudflare_account_id": "835be132294747fc96fd95f4f5994e98",
+    "app_id": "virtual-life",
+    "must_not_share_city_database_or_save_namespace": true
+  }
+}

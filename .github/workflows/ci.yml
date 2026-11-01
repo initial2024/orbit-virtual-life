@@ -1,0 +1,36 @@
+name: Virtual Life CI (no deploy)
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: virtual-life-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "22"
+      - name: Verify modules and fail-closed gates
+        run: npm run verify
+      - name: Run SQLite atomic payroll gate
+        run: python3 tests/payroll_atomic_sqlite_gate.py
+
+      - name: Prove target-account gate rejects an unrelated account
+        shell: bash
+        run: |
+          set -euo pipefail
+          if CLOUDFLARE_ACCOUNT_ID=a440d52410a88bb658b59b48ac10e7fd npm run gate:deploy-target; then
+            echo "::error::Wrong-account gate unexpectedly passed"
+            exit 1
+          fi

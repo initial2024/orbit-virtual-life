@@ -1,0 +1,36 @@
+-- Design candidate only. Separate D1 for Orbit Virtual Life; app_id is deliberately not repeated per row.
+-- Do not apply until Cloudflare resource/cost/security gates pass.
+PRAGMA foreign_keys=ON;
+CREATE TABLE accounts_ref(account_id TEXT PRIMARY KEY,public_name TEXT NOT NULL DEFAULT '',reputation INTEGER NOT NULL DEFAULT 50,updated_at INTEGER NOT NULL);
+CREATE TABLE wallets(account_id TEXT NOT NULL,currency TEXT NOT NULL,balance_minor INTEGER NOT NULL DEFAULT 0,revision INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(account_id,currency));
+CREATE TABLE ledger_entries(id TEXT PRIMARY KEY,account_id TEXT NOT NULL,currency TEXT NOT NULL,amount_minor INTEGER NOT NULL,kind TEXT NOT NULL,ref_type TEXT,ref_id TEXT,created_at INTEGER NOT NULL);
+CREATE INDEX ledger_account_time ON ledger_entries(account_id,created_at DESC);
+CREATE TABLE ledger_monthly(account_id TEXT NOT NULL,currency TEXT NOT NULL,month INTEGER NOT NULL,income_minor INTEGER NOT NULL DEFAULT 0,expense_minor INTEGER NOT NULL DEFAULT 0,refund_minor INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(account_id,currency,month));
+CREATE TABLE companies(company_id TEXT PRIMARY KEY,founder_id TEXT NOT NULL,name TEXT NOT NULL,region TEXT NOT NULL,industry TEXT NOT NULL,status TEXT NOT NULL,cash_minor INTEGER NOT NULL,reputation INTEGER NOT NULL DEFAULT 60,revision INTEGER NOT NULL DEFAULT 0,updated_at INTEGER NOT NULL);
+CREATE TABLE company_members(company_id TEXT NOT NULL,account_id TEXT NOT NULL,role TEXT NOT NULL,weekly_wage_minor INTEGER NOT NULL DEFAULT 0,status TEXT NOT NULL,skill INTEGER NOT NULL DEFAULT 50,PRIMARY KEY(company_id,account_id),FOREIGN KEY(company_id) REFERENCES companies(company_id) ON DELETE CASCADE);
+CREATE INDEX company_member_account ON company_members(account_id,status);
+CREATE TABLE company_npc_staff(company_id TEXT NOT NULL,role TEXT NOT NULL,grade TEXT NOT NULL,count INTEGER NOT NULL CHECK(count>=0),weekly_wage_minor INTEGER NOT NULL,morale INTEGER NOT NULL DEFAULT 70,avg_skill INTEGER NOT NULL DEFAULT 50,UNIQUE(company_id,role,grade),FOREIGN KEY(company_id) REFERENCES companies(company_id) ON DELETE CASCADE);
+CREATE TABLE company_jobs(job_id TEXT PRIMARY KEY,company_id TEXT NOT NULL,role TEXT NOT NULL,weekly_wage_minor INTEGER NOT NULL,slots INTEGER NOT NULL CHECK(slots BETWEEN 1 AND 8),filled INTEGER NOT NULL DEFAULT 0,status TEXT NOT NULL,expires_at INTEGER NOT NULL,created_at INTEGER NOT NULL,FOREIGN KEY(company_id) REFERENCES companies(company_id) ON DELETE CASCADE);
+CREATE INDEX company_jobs_open ON company_jobs(status,expires_at);
+CREATE TABLE company_applications(job_id TEXT NOT NULL,account_id TEXT NOT NULL,skill INTEGER NOT NULL,message TEXT NOT NULL DEFAULT '' CHECK(length(message)<=240),status TEXT NOT NULL,created_at INTEGER NOT NULL,PRIMARY KEY(job_id,account_id),FOREIGN KEY(job_id) REFERENCES company_jobs(job_id) ON DELETE CASCADE);
+CREATE TABLE stores(store_id TEXT PRIMARY KEY,company_id TEXT,region TEXT NOT NULL,store_type TEXT NOT NULL,name TEXT NOT NULL,status TEXT NOT NULL,reputation INTEGER NOT NULL DEFAULT 60,revision INTEGER NOT NULL DEFAULT 0,FOREIGN KEY(company_id) REFERENCES companies(company_id));
+CREATE TABLE inventory(store_id TEXT NOT NULL,sku TEXT NOT NULL,variant TEXT NOT NULL DEFAULT '',quantity INTEGER NOT NULL CHECK(quantity>=0),price_minor INTEGER NOT NULL CHECK(price_minor>=0),revision INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(store_id,sku,variant),FOREIGN KEY(store_id) REFERENCES stores(store_id) ON DELETE CASCADE);
+CREATE TABLE orders(order_id TEXT PRIMARY KEY,buyer_id TEXT NOT NULL,store_id TEXT NOT NULL,currency TEXT NOT NULL,total_minor INTEGER NOT NULL,status TEXT NOT NULL,created_at INTEGER NOT NULL,updated_at INTEGER NOT NULL);
+CREATE INDEX orders_buyer_time ON orders(buyer_id,created_at DESC);
+CREATE INDEX orders_store_time ON orders(store_id,created_at DESC);
+CREATE TABLE order_items(order_id TEXT NOT NULL,line_no INTEGER NOT NULL,sku TEXT NOT NULL,variant TEXT NOT NULL DEFAULT '',quantity INTEGER NOT NULL,unit_price_minor INTEGER NOT NULL,PRIMARY KEY(order_id,line_no),FOREIGN KEY(order_id) REFERENCES orders(order_id) ON DELETE CASCADE);
+CREATE TABLE reviews(review_id TEXT PRIMARY KEY,account_id TEXT NOT NULL,target_type TEXT NOT NULL,target_id TEXT NOT NULL,order_id TEXT,rating INTEGER NOT NULL CHECK(rating BETWEEN 1 AND 5),body TEXT NOT NULL DEFAULT '' CHECK(length(body)<=800),created_at INTEGER NOT NULL,updated_at INTEGER NOT NULL);
+CREATE INDEX reviews_target ON reviews(target_type,target_id,created_at DESC);
+CREATE TABLE comments(comment_id TEXT PRIMARY KEY,account_id TEXT NOT NULL,scope_type TEXT NOT NULL,scope_id TEXT NOT NULL,body TEXT NOT NULL CHECK(length(body)<=1000),created_at INTEGER NOT NULL,updated_at INTEGER NOT NULL,status TEXT NOT NULL DEFAULT 'visible');
+CREATE INDEX comments_scope ON comments(scope_type,scope_id,created_at DESC);
+CREATE TABLE market_state(region TEXT NOT NULL,sku TEXT NOT NULL,reference_price_minor INTEGER NOT NULL,real_demand INTEGER NOT NULL DEFAULT 0,simulated_demand INTEGER NOT NULL DEFAULT 0,available_supply INTEGER NOT NULL DEFAULT 0,revision INTEGER NOT NULL DEFAULT 0,updated_at INTEGER NOT NULL,PRIMARY KEY(region,sku));
+CREATE TABLE market_buckets(region TEXT NOT NULL,sku TEXT NOT NULL,bucket INTEGER NOT NULL,open_minor INTEGER NOT NULL,high_minor INTEGER NOT NULL,low_minor INTEGER NOT NULL,close_minor INTEGER NOT NULL,real_volume INTEGER NOT NULL DEFAULT 0,simulated_volume INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(region,sku,bucket));
+CREATE TABLE idempotency_keys(account_id TEXT NOT NULL,request_id TEXT NOT NULL,committed_revision INTEGER NOT NULL,created_at INTEGER NOT NULL,PRIMARY KEY(account_id,request_id));
+CREATE TABLE sync_heads(account_id TEXT PRIMARY KEY,revision INTEGER NOT NULL,digest TEXT NOT NULL,checkpoint_revision INTEGER NOT NULL DEFAULT 0,updated_at INTEGER NOT NULL);
+CREATE TABLE checkpoints(account_id TEXT PRIMARY KEY,revision INTEGER NOT NULL,encoded_snapshot TEXT NOT NULL,encoded_bytes INTEGER NOT NULL CHECK(encoded_bytes<=196608),updated_at INTEGER NOT NULL);
+
+-- One compact state row per country/region; old event detail is bounded/compacted.
+CREATE TABLE policy_state(scope_type TEXT NOT NULL,scope_id TEXT NOT NULL,period INTEGER NOT NULL,revision INTEGER NOT NULL,state_json TEXT NOT NULL CHECK(length(state_json)<=4096),updated_at INTEGER NOT NULL,PRIMARY KEY(scope_type,scope_id));
+CREATE TABLE policy_events(event_id TEXT PRIMARY KEY,scope_type TEXT NOT NULL,scope_id TEXT NOT NULL,period INTEGER NOT NULL,event_code TEXT NOT NULL,delta_scaled INTEGER NOT NULL,created_at INTEGER NOT NULL);
+CREATE INDEX policy_events_scope ON policy_events(scope_type,scope_id,period DESC);
+CREATE TABLE settlement_heads(kind TEXT NOT NULL,scope_id TEXT NOT NULL,period INTEGER NOT NULL,revision INTEGER NOT NULL,updated_at INTEGER NOT NULL,PRIMARY KEY(kind,scope_id));
