@@ -5,7 +5,10 @@
     "file_name": "Orbit_Virtual_Life_V35_2_portable.html",
     "expected_sha256": "b53f7146eee9a8f27842a9f65c043777a6216dd9d227690a29a714dde21e08af",
     "source_zip_sha256": "eb9c1365e42bcccd0f7eaab949160328b6e21bab6c0795ec9cdddf89fd08af18",
-    "raw_bytes_currently_retrieved": false
+    "raw_bytes_currently_retrieved": true,
+    "expected_size_bytes": 1528024,
+    "retrieved_sha256": "b53f7146eee9a8f27842a9f65c043777a6216dd9d227690a29a714dde21e08af",
+    "repository_path": "client/Orbit_Virtual_Life_V35_2_portable.html"
   },
   "known_non_authoritative_library_candidate": {
     "file_name": "Orbit_Virtual_Life_V35_portable.html",

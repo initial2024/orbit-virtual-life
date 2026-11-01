@@ -1,28 +1,30 @@
 # V35.2 exact-byte import and deployment gate
 
-This branch does **not** declare the V35.2 client imported or production-ready.
+## Exact client recovered
 
-## Authoritative record
+The authoritative V35.2 artifact has now been recovered from the Project-backed file without modifying the original:
+- Project file copied to ordinary Library as a separate recovery copy;
+- raw materialized size: **1,528,024 bytes**;
+- raw SHA-256: **b53f7146eee9a8f27842a9f65c043777a6216dd9d227690a29a714dde21e08af**;
+- Files pagination reconstruction was independently checked to reproduce the same byte count and SHA before creating the Git blob;
+- Git blob: `29a461312ccd1925a8f39d5573ee646fe14afbef`;
+- repository path: `client/Orbit_Virtual_Life_V35_2_portable.html`.
 
-The acceptance record names `Orbit_Virtual_Life_V35_2_portable.html` with SHA-256
-`b53f7146eee9a8f27842a9f65c043777a6216dd9d227690a29a714dde21e08af`
-and source ZIP SHA-256
+The accepted source ZIP record remains SHA-256
 `eb9c1365e42bcccd0f7eaab949160328b6e21bab6c0795ec9cdddf89fd08af18`.
 
-The current Project-backed V35.2 file does not expose an authorized raw-byte materialization path, so the authoritative bytes have **not** been re-retrieved in this session.
+## Historical conflict resolved
 
-## Conflict discovered on 2026-11-01
-
-A different Library file named `Orbit_Virtual_Life_V35_portable.html` was materialized as raw bytes:
+The separate Library file `Orbit_Virtual_Life_V35_portable.html` is **not** byte-identical:
 - 1,526,059 bytes
 - SHA-256 `ee3024239a4b582d89325640092511ec061291e972827740cb37d121bd6b0b9c`
 
-It therefore must not be substituted for the accepted V35.2 artifact.
+It remains explicitly forbidden as a substitute for V35.2.
 
 ## Fail-closed rules
 
-1. `npm run gate:client` fails unless the exact accepted SHA is present at `client/Orbit_Virtual_Life_V35_2_portable.html`.
-2. No normalized, reconstructed, line-rejoined or manually rewritten HTML may satisfy the gate.
-3. Deployment must additionally pass `npm run gate:deploy-target` with Cloudflare account `835be132294747fc96fd95f4f5994e98`.
+1. `npm run gate:client` checks both the exact expected byte length and SHA of the repository client.
+2. Normalized, reconstructed with a different hash, manually rewritten, or older V35 files do not pass.
+3. Deployment additionally requires `npm run gate:deploy-target` with Cloudflare account `835be132294747fc96fd95f4f5994e98`.
 4. City Simulator databases, app IDs and save namespaces must never be reused.
-5. Until both gates pass, no production or cloud-enabled deployment is authorized.
+5. Exact client recovery does **not** by itself authorize cloud deployment; the target Cloudflare account is still not connected in the current tool session.

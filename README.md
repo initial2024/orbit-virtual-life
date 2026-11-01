@@ -27,3 +27,7 @@ Generated product media and monolithic offline preview files remain build artifa
 All currency, companies, securities, loans, lotteries, taxes, immigration and other institutions are fictional simulation mechanics unless an official informational source is explicitly linked. No real-money brokerage, gambling, lending, banking or immigration service is provided.
 
 See `DISCLAIMER.md`, `docs/ARCHITECTURE.md`, `docs/ACCOUNT_SYNC_V1.md`, and `docs/COMPANY_SYSTEM.md`.
+
+## V35.2 exact client
+
+The validated V35.2 portable client is tracked at `client/Orbit_Virtual_Life_V35_2_portable.html`. CI verifies its exact byte length and SHA-256 before any future deployment work. Cloud deployment remains blocked unless the dedicated Virtual Life Cloudflare account gate passes.
