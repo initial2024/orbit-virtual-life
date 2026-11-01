@@ -1,0 +1,33 @@
+name: V35.2 Browser Gate
+
+on:
+  pull_request:
+    paths:
+      - "client/Orbit_Virtual_Life_V35_2_portable.html"
+      - "scripts/browser-v35_2-smoke.mjs"
+      - ".github/workflows/v35_2-browser.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: v35-2-browser-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "22"
+      - name: Install pinned browser runner
+        run: |
+          npm install --no-save --ignore-scripts playwright@1.57.0
+          npx playwright install --with-deps chromium
+      - name: Run exact-client Chromium gate
+        run: node scripts/browser-v35_2-smoke.mjs
