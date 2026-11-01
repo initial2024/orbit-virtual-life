@@ -37,15 +37,13 @@ export function forecastMonthlyCashflow({region,grossSalary,withholdingRate,base
  return Object.freeze({region,currency:'SIM',grossSalary:sim(gross),payrollTax:sim(tax),netPaycheck:sim(net),essentialExpenses:needs.byCategory,essentialTotal:needs.total,spendableAfterNeeds:sim(free),oneTimeStarter:sim(starter),initialMonthCashflow:sim(free+starter),warning:free<0?'MONTHLY_DEFICIT':null});
 }
 const validId=x=>typeof x==='string'&&/^[A-Za-z0-9:_-]{4,80}$/.test(x);
-export function planPaycheckTransfers({playerId,employmentId,periodId,employerAccount,grossSalary,withholdingRate,currency='SIM'}={}){
- if(!validId(playerId)||!validId(employmentId)||!validId(employerAccount)||!Number.isSafeInteger(periodId)||periodId<1||periodId>100000||currency!=='SIM')throw Error('INVALID_PAYROLL_ID');
+export function paycheckForecast({employmentId,periodId,grossSalary,withholdingRate,currency='SIM'}={}){
+ if(!validId(employmentId)||!Number.isSafeInteger(periodId)||periodId<1||periodId>100000||currency!=='SIM')throw Error('INVALID_PAYROLL_ID');
  const gross=money(grossSalary,'grossSalary');
  if(typeof withholdingRate!=='number'||!Number.isFinite(withholdingRate)||withholdingRate<0||withholdingRate>.6)throw Error('INVALID_WITHHOLDING_RATE');
  const tax=Math.round(gross*withholdingRate),net=gross-tax;
- const refId='payroll:'+playerId+':'+employmentId+':'+periodId,transfers=[];
- if(net>0)transfers.push({from:employerAccount,to:'player:'+playerId,currency,amount:sim(net),kind:'salary_net',refId});
- if(tax>0)transfers.push({from:employerAccount,to:'system:government',currency,amount:sim(tax),kind:'salary_withholding',refId});
- return {refId,grossSalary:sim(gross),netPaycheck:sim(net),withheldTax:sim(tax),transfers};
+ // Forecast/display only. This module has no from/to accounts and MUST NOT write a ledger.
+ return Object.freeze({forecastId:'paycheck-forecast:'+employmentId+':'+periodId,employmentId,periodId,currency,grossSalary:sim(gross),netPaycheck:sim(net),withheldTax:sim(tax),executionAuthority:'server_payroll',ledgerTransfers:false});
 }
 // Rent, food and bills are ONLY estimates in this module. Actual purchases have separate
 // authoritative ledger transactions. Do not deduct estimated needs again from payday.
