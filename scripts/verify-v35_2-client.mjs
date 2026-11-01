@@ -22,7 +22,7 @@ if(process.argv[1]===fileURLToPath(import.meta.url)){
   const result=verifyExactFile({
     filePath:file,
     expectedSha256:config.authoritative_import.expected_sha256,
-    expectedBytes:null
+    expectedBytes:Number.isInteger(config.authoritative_import.expected_size_bytes)?config.authoritative_import.expected_size_bytes:null
   });
   process.stdout.write(JSON.stringify(result)+"\n");
 }
