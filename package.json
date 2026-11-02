@@ -5,11 +5,12 @@
   "type": "module",
   "scripts": {
     "test": "node --test",
-    "check": "node --check src/shared-sync.mjs && node --check src/company-engine.mjs && node --check src/company-settlement.mjs && node --check src/shared-actions.mjs && node --check src/policy-engine.mjs && node --check src/household-cashflow.mjs && node --check src/payroll-atomic.mjs && node --check scripts/verify-v35_2-client.mjs && node --check scripts/verify-deploy-target.mjs",
+    "check": "node --check src/shared-sync.mjs && node --check src/company-engine.mjs && node --check src/company-settlement.mjs && node --check src/shared-actions.mjs && node --check src/policy-engine.mjs && node --check src/household-cashflow.mjs && node --check src/payroll-atomic.mjs && node --check scripts/verify-v35_2-client.mjs && node --check scripts/verify-deploy-target.mjs && node --check scripts/build-offline-preview.mjs",
     "verify": "npm run check && npm test && npm run test:client-gate",
     "test:client-gate": "node --test tests/v35_2-client-gate.test.mjs",
     "gate:client": "node scripts/verify-v35_2-client.mjs",
-    "gate:deploy-target": "node scripts/verify-deploy-target.mjs"
+    "gate:deploy-target": "node scripts/verify-deploy-target.mjs",
+    "build:offline-preview": "node scripts/build-offline-preview.mjs"
   },
   "engines": {
     "node": ">=20"

@@ -25,6 +25,8 @@ jobs:
         run: npm run verify
       - name: Verify exact V35.2 client artifact
         run: npm run gate:client
+      - name: Build exact offline-only Pages preview (no Cloudflare deploy)
+        run: npm run build:offline-preview
 
       - name: Run SQLite atomic payroll gate
         run: python3 tests/payroll_atomic_sqlite_gate.py
