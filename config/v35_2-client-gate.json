@@ -17,7 +17,7 @@
     "accepted_as_substitute": false
   },
   "deployment_target": {
-    "cloudflare_account_id": "835be132294747fc96fd95f4f5994e98",
+    "cloudflare_account_id": "003e170d11c2de2330567c1faddb6d39",
     "app_id": "virtual-life",
     "must_not_share_city_database_or_save_namespace": true
   }
